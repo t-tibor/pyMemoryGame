@@ -1,0 +1,219 @@
+#:kivy 1.0
+
+<ScreenFooter@AnchorLayout>:
+    size_hint: (1, None)
+    height: 70
+    anchor_x: 'center'
+    Button:
+        size: (70, 70)
+        size_hint: (None, None)
+        background_normal: './icons/home.png'
+        on_press:
+            root.screen.manager.transition.direction = root.transition_dir
+            root.screen.manager.current='Main'
+
+<Footer@AnchorLayout>:
+    size_hint: (1, None)
+    height: 70
+    anchor_x: 'center'
+
+<FooterBase@AnchorLayout>:
+    size_hint: (1, None)
+    height: 70
+    anchor_x: 'center'
+
+<FooterButton@Button>:
+    size: (70, 70)
+    size_hint: (None, None)
+
+
+<MainScreen>:
+    name: 'Main'
+
+    BoxLayout:
+        orientation: 'vertical'
+        AnchorLayout:
+
+            anchor_x: 'center'
+            anchor_y: 'center'
+
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: (None, None)
+                height: 200
+                width: 460
+                spacing: 60
+
+                Button:
+                    size_hint: (1, 1)
+                    background_normal: './icons/video.png'
+                    on_press:
+                        root.manager.transition.direction = 'right'
+                        root.manager.current='VideoScreen'
+
+
+
+                Button:
+                    size: (1, 1)
+                    background_normal: './icons/memory.png'
+                    on_press:
+                        root.manager.transition.direction = 'left'
+                        root.manager.current='MemoryScreen'
+
+        ScreenFooter:
+            screen: root
+
+<VideoGridWrapper>:
+
+<BB@Button>:
+    size_hint_y:None
+    height: 100
+
+<VideoScreen>:
+    name: 'VideoScreen'
+    grid: grid
+    video_label: video_label
+    BoxLayout:
+        orientation: 'vertical'
+
+        BoxLayout:
+            size_hint: (1, 0.1)
+            orientation: 'horizontal'
+
+        ScrollView:
+            VideoGrid:
+                height: self.minimum_height
+                id: grid
+                size_hint: (0.9, None)
+
+        AnchorLayout:
+            size_hint: (1, None)
+            height: 70
+            anchor_x: 'center'
+
+            AnchorLayout:
+                size_hint: (1, 1)
+                anchor_x: 'left'
+                Label:
+                    id: video_label
+                    text: ''
+                    size_hint: (0.4, 1)
+
+            AnchorLayout:
+                size_hint: (1, 1)
+                anchor_x: 'center'
+                Button:
+                    size: (70, 70)
+                    size_hint: (None, None)
+                    background_normal: './icons/home.png'
+                    on_press:
+                        root.manager.transition.direction='left'
+                        root.manager.current='Main'
+            AnchorLayout:
+                size_hint: (1, 1)
+                anchor_x: 'right'
+                Button:
+                    size: (70, 70)
+                    size_hint: (None, None)
+                    background_normal: './icons/play.png'
+                    on_press:
+                        root.on_play()
+
+
+<MemoryTable>:
+
+<MemorySettings>:
+    auto_dismiss: False
+    title: 'Memory game settings'
+    cards_x: size_input.value
+    cards_y: root.calc_y(root.cards_x)
+    background_color: (0, 0, 0, 0.2)
+
+    BoxLayout:
+        orientation: 'vertical'
+        AnchorLayout:
+            size_hint: (1, 1)
+            anchor_y: 'top'
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint: (1, None)
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint: (1, None)
+                    height: 50
+                    Label:
+                        text: 'Size: %d x %d' % (root.cards_x, root.cards_y)
+                    Slider:
+                        id: size_input
+                        size_hint: (1, 1)
+                        min: 4
+                        max: 10
+                        value: root.cards_x
+        AnchorLayout:
+            size_hint: (1, 0.2)
+            Button:
+                size_hint: (None, 1)
+                width: self.height
+                background_normal: './icons/apply.png'
+                on_press:
+                    root.dismiss()
+
+
+
+
+
+<MemoryScreen>:
+    score_label: score_label
+    click_label: click_label
+    time_label: time_label
+    table: table
+
+    name: 'MemoryScreen'
+
+    BoxLayout:
+        orientation: 'vertical'
+        size_hint: (1, 1)
+
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint: (1, 0.1)
+            Label:
+                id: click_label
+                text: 'Clicks: %d' % root.table.click_cnt
+            Label:
+                id: score_label
+                text: 'Pairs fund: %d' % root.table.score
+            Label:
+                id: time_label
+                text: '%02d:%02d' % (root.game_time//60, root.game_time%60)
+
+        MemoryTable:
+            id: table
+            cards_x: 4
+            cards_y: 3
+
+            on_pair_found: root.pair_found(args)
+            on_finish: root.on_game_end(args)
+
+        Footer:
+            FooterBase:
+                FooterButton:
+                    background_normal: './icons/home.png'
+                    on_press:
+                        root.manager.transition.direction = 'right'
+                        root.manager.current='Main'
+            FooterBase:
+                anchor_x: 'left'
+                FooterButton:
+                    background_normal: './icons/reset.png'
+                    on_press: root.on_reset()
+            FooterBase:
+                anchor_x: 'right'
+                StackLayout:
+                    orientation: 'rl-bt'
+                    FooterButton:
+                        background_normal: './icons/highscores.png'
+                        on_release: root.on_scores(args[0])
+                    FooterButton:
+                        background_normal: './icons/settings.png'
+                        on_release: root.on_settings(args[0])
