@@ -16,6 +16,7 @@ from highscore_screen import HighScorePopup, HighScoreViewer
 from utils import *
 from highscore_database import DB
 import itertools
+from math import ceil
 v = 0
 
 
@@ -263,7 +264,7 @@ class MemorySettings(Popup):
         ratio = self.width / self.height
 
         n_x = int(x//1)
-        n_y = int(x//ratio)
+        n_y = int(ceil(x/ratio))
         if (n_x * n_y) % 2 == 1:
             n_y += 1
         return n_y
@@ -286,6 +287,8 @@ class MemoryScreen(Screen):
 
     def clock_tick(self, *args):
         self.game_time += 1
+        if self.game_time > 20*60:
+            self.clock_stop()
 
     def on_reset(self, *args):
         self.clock_stop()
@@ -305,10 +308,15 @@ class MemoryScreen(Screen):
 
     def on_scores(self, *args):
         p = HighScoreViewer()
+        p.bind(on_dismiss=self.on_reset)
         p.open()
 
     def on_enter(self, *args):
         self.on_reset()
+
+    def on_leave(self, *args):
+        print('Memory leave')
+        self.clock_stop()
 
     def on_settings(self, *args):
         s = MemorySettings()

@@ -85,6 +85,7 @@
                 height: self.minimum_height
                 id: grid
                 size_hint: (0.9, None)
+                on_selection_changed: root.video_selected(*args)
 
         AnchorLayout:
             size_hint: (1, None)
