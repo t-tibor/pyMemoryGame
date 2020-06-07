@@ -26,6 +26,12 @@
     size: (70, 70)
     size_hint: (None, None)
 
+<FooterHomeButton@Button>:
+    size: (70, 70)
+    size_hint: (None, None)
+    background_normal: './icons/home.png'
+
+
 
 <MainScreen>:
     name: 'Main'
@@ -43,16 +49,30 @@
                 height: 200
                 width: 460
                 spacing: 60
-
                 Button:
                     size_hint: (1, 1)
                     background_normal: './icons/video.png'
                     on_press:
                         root.manager.transition.direction = 'right'
                         root.manager.current='VideoScreen'
-
-
-
+                Button:
+                    size: (1, 1)
+                    background_normal: './icons/memory.png'
+                    on_press:
+                        root.manager.transition.direction = 'left'
+                        root.manager.current='MemoryScreen'
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint: (None, None)
+                height: 200
+                width: 460
+                spacing: 60
+                Button:
+                    size_hint: (1, 1)
+                    background_normal: './icons/video.png'
+                    on_press:
+                        root.manager.transition.direction = 'right'
+                        root.manager.current='VideoScreen'
                 Button:
                     size: (1, 1)
                     background_normal: './icons/memory.png'
@@ -218,3 +238,82 @@
                     FooterButton:
                         background_normal: './icons/settings.png'
                         on_release: root.on_settings(args[0])
+
+<PictureViewer>:
+    _carousel_widget: carousel
+    _comment_widget: comment
+    _auto_step_widget: auto_step
+
+    name: 'PictureViewer'
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Carousel:
+            id: carousel
+            loop: True
+            size_hint: (1, 0.8)
+            on_index: root.on_slide(*args)
+            AsyncImage:
+                source: ''
+            AsyncImage:
+                source: ''
+            AsyncImage:
+                source: ''
+
+
+        Label:
+            id: comment
+            text: root.image_source
+            size_hint: (1, 0.1)
+
+        Footer:
+            FooterBase:
+                anchor_x: 'left'
+                FooterButton:
+                    background_normal: './icons/back.png'
+                    background_down: './icons/back.png'
+                    on_press:
+                        root.manager.transition.direction = 'right'
+                        root.manager.current = 'PictureBrowser'
+
+            FooterHomeButton:
+                on_press:
+                    root.manager.transition.direction = 'up'
+                    root.manager.current='Main'
+
+            FooterBase:
+                anchor_x: 'right'
+                StackLayout:
+                    orientation: 'rl-bt'
+                    ToggleButton:
+                        id: auto_step
+                        size: (70, 70)
+                        size_hint: (None, None)
+                        background_normal: './icons/play.png'
+                        background_down: './icons/stop.png'
+                        on_state: root.on_toggle_bnt(*args)
+
+<PictureFolderChooser>:
+
+<PictureBrowser>:
+    name: 'PictureBrowser'
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        PictureFolderChooser:
+            id: selector
+            on_submit: root.on_open(*args)
+
+        Footer:
+            FooterHomeButton:
+                on_press:
+                    root.manager.transition.direction = 'up'
+                    root.manager.current='Main'
+
+            FooterBase:
+                anchor_x: 'right'
+                FooterButton:
+                    background_normal: './icons/play.png'
+                    on_release: root.on_open(args[0], selector.selection)

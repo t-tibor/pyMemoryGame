@@ -1,20 +1,15 @@
 import random
 import os
-import functools
 
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.graphics import Rectangle, Color
-from kivy.properties import NumericProperty
 from kivy.animation import Animation
 from kivy.clock import Clock
-from highscore_screen import HighScorePopup, HighScoreViewer
-from utils import *
-from highscore_database import DB
+from pyMemoryGame.highscore_screen import HighScorePopup, HighScoreViewer
+from pyMemoryGame.utils import *
+from pyMemoryGame.highscore_database import DB
 import itertools
 from math import ceil
 v = 0
@@ -108,7 +103,9 @@ def matrix_pos_generator(size_x, size_y):
             yield (x, y)
 
 
-def load_pictures(path='./pictures'):
+def load_pictures(path=None):
+    if path is None:
+        path = os.path.join(os.path.dirname(__file__), 'memory_cards')
     if not os.path.isdir(path):
         raise Exception('Given folder: %s does not exists' % path)
     file_list = [os.path.join(path, fname) for fname in os.listdir(path) if fname.endswith('.png') or fname.endswith('.jpg')]

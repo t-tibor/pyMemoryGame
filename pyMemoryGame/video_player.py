@@ -1,7 +1,4 @@
 import os.path
-from sys import argv
-from os.path import dirname, join
-from kivy.uix.video import Video
 from kivy.uix.videoplayer import VideoPlayer
 import kivy
 from ffpyplayer.player import MediaPlayer
@@ -9,18 +6,12 @@ from ffpyplayer.writer import MediaWriter
 import time
 import pathlib
 import logging
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.image import AsyncImage, Image
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.graphics import Rectangle, Line, Color
-from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.image import Image
+from kivy.graphics import Line, Color
 from kivy.uix.popup import Popup
 from kivy.uix.scrollview import ScrollView
-from utils import *
-import functools
+from pyMemoryGame.utils import *
 
 kivy.require('1.2.0')
 

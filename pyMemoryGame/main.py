@@ -4,16 +4,17 @@ os.environ['KIVY_GL_BACKEND'] = 'angle_sdl2'
 from kivy.config import Config
 Config.set('graphics', 'multisamples', '0')
 Config.set("kivy", "keyboard_mode", "dock")
-Config.set("graphics", "fullscreen", "auto")
+#Config.set("graphics", "fullscreen", "auto")
 import kivy
 kivy.require('1.2.0')
 from kivy.app import App
-from video_player import VideoScreen
-from memory_screen import MemoryScreen
+from pyMemoryGame.video_player import VideoScreen
+from pyMemoryGame.memory_screen import MemoryScreen
+from pyMemoryGame.picture_viewer import PictureViewer, PictureBrowser
 
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager
 from kivy.clock import Clock
-from utils import *
+from pyMemoryGame.utils import *
 
 
 class MainScreen(Screen):
@@ -21,6 +22,8 @@ class MainScreen(Screen):
 
 
 class SchoolApp(App):
+    picture_viewer = ObjectProperty()
+
     watchdog_time_left = NumericProperty()
     watchdog_event = ObjectProperty()
     screenManager = ObjectProperty()
@@ -36,9 +39,15 @@ class SchoolApp(App):
 
         sm.bind(on_touch_down=self.touch_handler)
 
+        self.picture_viewer = PictureViewer()
+
+        sm.add_widget(PictureBrowser(viewer=self.picture_viewer))
         sm.add_widget(MainScreen())
+
+        sm.add_widget(self.picture_viewer)
         sm.add_widget(VideoScreen())
         sm.add_widget(MemoryScreen())
+
         return sm
 
     def watchdog_reset(self):
@@ -53,7 +62,10 @@ class SchoolApp(App):
         if self.watchdog_time_left < 0:
             self.watchdog_reset()
             print('Watchdog reset')
-            self.screenManager.current = 'Main'
+            self.screenManager.transition.direction = 'down'
+            self.picture_viewer.auto_step = True
+            self.picture_viewer.image_source = ''
+            self.screenManager.current = 'PictureViewer'
 
 
 if __name__ == '__main__':

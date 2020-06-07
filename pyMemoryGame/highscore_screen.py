@@ -7,7 +7,7 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.popup import Popup
 
-from highscore_database import DB
+from pyMemoryGame.highscore_database import DB
 
 
 class HighScoreTable(GridLayout):
