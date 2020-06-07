@@ -228,7 +228,6 @@ class PictureViewer(Screen):
 
         self._carousel_last_idx = idx
         self.rearm_timer()
-        Cache.print_usage()
 
     def on_toggle_bnt(self, source, state, *args):
         self.auto_step = False if state == 'down' else True

@@ -5,6 +5,7 @@ from kivy.config import Config
 Config.set('graphics', 'multisamples', '0')
 Config.set("kivy", "keyboard_mode", "dock")
 #Config.set("graphics", "fullscreen", "auto")
+#Config.set('graphics', 'show_cursor', 0)
 import kivy
 kivy.require('1.2.0')
 from kivy.app import App
@@ -54,13 +55,13 @@ class SchoolApp(App):
 
     def touch_handler(self, *args):
         self.watchdog_reset()
-        print('Touch happened.')
+        #print('Touch happened.')
 
     def watchdog_tick(self, *args):
         self.watchdog_time_left -= self.watchdog_tick_period_sec
         if self.watchdog_time_left < 0:
             self.watchdog_reset()
-            print('Watchdog reset')
+            #print('Watchdog reset')
             self.screenManager.transition.direction = 'down'
             self.picture_viewer.auto_step = True
             self.picture_viewer.image_source = ''
