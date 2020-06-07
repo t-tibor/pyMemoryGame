@@ -44,41 +44,44 @@
             anchor_y: 'center'
 
             BoxLayout:
-                orientation: 'horizontal'
+                orientation: 'vertical'
                 size_hint: (None, None)
-                height: 200
                 width: 460
+                height: 460
                 spacing: 60
-                Button:
-                    size_hint: (1, 1)
-                    background_normal: './icons/video.png'
-                    on_press:
-                        root.manager.transition.direction = 'right'
-                        root.manager.current='VideoScreen'
-                Button:
-                    size: (1, 1)
-                    background_normal: './icons/memory.png'
-                    on_press:
-                        root.manager.transition.direction = 'left'
-                        root.manager.current='MemoryScreen'
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint: (None, None)
-                height: 200
-                width: 460
-                spacing: 60
-                Button:
-                    size_hint: (1, 1)
-                    background_normal: './icons/video.png'
-                    on_press:
-                        root.manager.transition.direction = 'right'
-                        root.manager.current='VideoScreen'
-                Button:
-                    size: (1, 1)
-                    background_normal: './icons/memory.png'
-                    on_press:
-                        root.manager.transition.direction = 'left'
-                        root.manager.current='MemoryScreen'
+
+                AnchorLayout:
+                    anchor_x: 'center'
+                    size_hint: (None, None)
+                    height: 200
+                    width: 460
+                    spacing: 60
+                    Button:
+                        size_hint: (None, None)
+                        size: (200, 200)
+                        background_normal: './icons/pictures.png'
+                        on_press:
+                            root.manager.transition.direction = 'down'
+                            root.manager.current='PictureBrowser'
+
+                BoxLayout:
+                    orientation: 'horizontal'
+                    size_hint: (None, None)
+                    height: 200
+                    width: 460
+                    spacing: 60
+                    Button:
+                        size_hint: (1, 1)
+                        background_normal: './icons/video.png'
+                        on_press:
+                            root.manager.transition.direction = 'right'
+                            root.manager.current='VideoScreen'
+                    Button:
+                        size: (1, 1)
+                        background_normal: './icons/memory.png'
+                        on_press:
+                            root.manager.transition.direction = 'left'
+                            root.manager.current='MemoryScreen'
 
         ScreenFooter:
             screen: root
@@ -180,9 +183,6 @@
                     root.dismiss()
 
 
-
-
-
 <MemoryScreen>:
     score_label: score_label
     click_label: click_label
@@ -264,7 +264,7 @@
 
         Label:
             id: comment
-            text: root.image_source
+            text: '%s / %d' % (root._loaded_folder, root._image_idx)
             size_hint: (1, 0.1)
 
         Footer:
@@ -286,6 +286,13 @@
                 anchor_x: 'right'
                 StackLayout:
                     orientation: 'rl-bt'
+                    FooterButton:
+                        background_normal: './icons/shuffle.png'
+                        background_down: './icons/shuffle.png'
+                        on_press:
+                            root.auto_step = True
+                            root.image_source=''
+                            root.load_pictures()
                     ToggleButton:
                         id: auto_step
                         size: (70, 70)

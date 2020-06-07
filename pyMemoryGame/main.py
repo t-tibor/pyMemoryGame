@@ -41,9 +41,8 @@ class SchoolApp(App):
 
         self.picture_viewer = PictureViewer()
 
-        sm.add_widget(PictureBrowser(viewer=self.picture_viewer))
         sm.add_widget(MainScreen())
-
+        sm.add_widget(PictureBrowser(viewer=self.picture_viewer))
         sm.add_widget(self.picture_viewer)
         sm.add_widget(VideoScreen())
         sm.add_widget(MemoryScreen())

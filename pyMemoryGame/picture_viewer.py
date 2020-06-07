@@ -54,7 +54,7 @@ class PictureDatabase(FileSystemAbstract):
         fdb = self.db[selected_folder]
         images = fdb['image_paths']
         cnt = min(len(images), num)
-        return random.sample(images, cnt)
+        return random.sample(images, cnt), selected_folder
 
     def get_images_from_folder(self, folder):
         fdb = self.db.get(folder, None)
@@ -121,45 +121,72 @@ class DelayedImage(AsyncImage):
 
 class PictureViewer(Screen):
     _carousel_widget = ObjectProperty()
+    _carousel_last_idx = NumericProperty(0)
     _comment_widget = ObjectProperty()
     _auto_step_widget = ObjectProperty()
     _timer = ObjectProperty()
 
+    image_source = StringProperty('')
+    auto_step = BooleanProperty(True)
+
     _loaded_folder = StringProperty('')
     _image_list = ObjectProperty()
     _image_idx = NumericProperty(0)
-    image_source = StringProperty('')
-    auto_step = BooleanProperty(True)
 
     def __init__(self, **kwargs):
         super(PictureViewer, self).__init__(**kwargs)
         self._timer = Clock.create_trigger(self.do_step, timeout=5)
 
+        Cache.register('kv.loader', limit=5, timeout=5)
+        Cache.register('kv.image', limit=20, timeout=5)
+        Cache.register('kv.texture', limit=200, timeout=5)
+
     def on_settings(self, *args):
         pass
 
+    def get_relative_slide_idx(self, rel_idx):
+        idx = self._carousel_widget.index
+        idx += rel_idx
+        slide_cnt = len(self._carousel_widget.slides)
+        while idx < 0:
+            idx += slide_cnt
+        while idx >= slide_cnt:
+            idx -= slide_cnt
+        return idx
+
     def load_pictures(self):
-        picture_list = []
-
+        self._timer.cancel()
         if self.image_source == '':
-            picture_list = PDB.get_random_images()
-            self._loaded_folder = ''
-            need_reload = True
-        elif self.image_source != self._loaded_folder:
-            picture_list = PDB.get_images_from_folder(self.image_source)
+            self._image_list, self._loaded_folder = PDB.get_random_images()
+        else:
+            self._image_list = PDB.get_images_from_folder(self.image_source)
             self._loaded_folder = self.image_source
-            need_reload = True
-        else:  # self.source_folder == self._loaded_folder:
-            need_reload = False
 
-        if need_reload:
-            for s in self._carousel_widget.slides:
-                s.unload()
-            self._carousel_widget.clear_widgets()
-            for pic_path in picture_list:
-                self._carousel_widget.add_widget(DelayedImage(delayed_source=pic_path))
-        self._carousel_widget.load_slide(self._carousel_widget.slides[0])
+        self._carousel_widget.index = 0
+        self._carousel_last_idx = 0
         self.load_slide(0)
+        self.rearm_timer()
+
+    def load_slide(self, img_idx, slide_rel_idx=0):
+        img_cnt = len(self._image_list)
+        if img_idx < 0 or img_idx >= img_cnt:
+            return
+
+        prev_img_idx = img_idx-1 if img_idx > 0 else img_cnt-1
+        curr_img_idx = img_idx
+        next_img_idx = img_idx+1 if img_idx < img_cnt-1 else 0
+
+        prev_slide = self._carousel_widget.slides[self.get_relative_slide_idx(slide_rel_idx-1)]
+        curr_slide = self._carousel_widget.slides[self.get_relative_slide_idx(slide_rel_idx)]
+        next_slide = self._carousel_widget.slides[self.get_relative_slide_idx(slide_rel_idx+1)]
+
+        prev_slide.source = self._image_list[prev_img_idx]
+        curr_slide.source = self._image_list[curr_img_idx]
+        next_slide.source = self._image_list[next_img_idx]
+
+        self._image_idx = img_idx
+        self._carousel_last_idx = self.get_relative_slide_idx(slide_rel_idx)
+        self._carousel_widget.load_slide(curr_slide)
 
 # event handlers
     def on_enter(self, *args):
@@ -175,31 +202,33 @@ class PictureViewer(Screen):
         self.rearm_timer()
         self._auto_step_widget.state = 'normal' if self.auto_step else 'down'
 
+    def _on_right_slide(self):
+        self._image_idx = self._image_idx + 1
+        if self._image_idx >= len(self._image_list):
+            self._image_idx = 0
+        self.load_slide(self._image_idx)
+
+    def _on_left_slide(self):
+        self._image_idx = self._image_idx-1
+        if self._image_idx < 0:
+            self._image_idx += len(self._image_list)
+        self.load_slide(self._image_idx)
+
     def on_slide(self, source, idx, *args):
-        self.load_slide(idx)
-        if self.auto_step:
-            self._timer.cancel()
-            self._timer()
+        di = idx - self._carousel_last_idx
+        if di < -1:
+            di += 3
+        if di > 1:
+            di -= 3
+
+        if di == 1:
+            self._on_right_slide()
+        elif di == -1:
+            self._on_left_slide()
+
+        self._carousel_last_idx = idx
+        self.rearm_timer()
         Cache.print_usage()
-
-    def load_slide(self, idx):
-        slide_cnt = len(self._carousel_widget.slides)
-        if (idx is None) or (idx >= slide_cnt):
-            return
-
-        if idx-3 >= 0:
-            self._carousel_widget.slides[idx-3].unload()
-        if idx-2 >= 0:
-            self._carousel_widget.slides[idx-2].unload()
-        if idx-1 >= 0:
-            self._carousel_widget.slides[idx-1].trigger_loading()
-        self._carousel_widget.slides[idx].trigger_loading()
-        if idx+1 < slide_cnt:
-            self._carousel_widget.slides[idx+1].trigger_loading()
-        if idx+2 < slide_cnt:
-            self._carousel_widget.slides[idx + 2].unload()
-        if idx+3 < slide_cnt:
-            self._carousel_widget.slides[idx + 3].unload()
 
     def on_toggle_bnt(self, source, state, *args):
         self.auto_step = False if state == 'down' else True
@@ -213,7 +242,13 @@ class PictureViewer(Screen):
             self._timer()
 
     def do_step(self, *args):
-        if self._carousel_widget.next_slide is not None:
+        if (self.image_source != '') and (self.image_source == self._loaded_folder):
             self._carousel_widget.load_next()
         else:
-            self.load_pictures()
+            if self._image_idx < len(self._image_list)-1:
+                self._carousel_widget.load_next()
+            else:
+                self.load_pictures()
+
+
+
