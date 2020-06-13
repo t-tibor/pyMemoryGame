@@ -46,7 +46,7 @@ class ScoreDatabase(EventDispatcher):
     def load_from_file(self):
         if not os.path.exists(self._path):
             with open(self._path, 'w') as f:
-                json.dump([], f)
+                json.dump({}, f)
 
         with open(self._path, 'r') as f:
             self.dbs = json.load(f)
@@ -60,4 +60,10 @@ class ScoreDatabase(EventDispatcher):
             yield idx, item['name'], item['score']
 
 
-DB = ScoreDatabase(r'./pyMemoryDb.json')
+appdata_path = os.path.join(os.environ['APPDATA'], 'pyMemoryGame')
+if not os.path.exists(appdata_path):
+    print('Creating appdata directory: %s' % appdata_path)
+    os.makedirs(appdata_path)
+
+score_db_path = os.path.join(appdata_path, 'pyMemoryDb.json')
+DB = ScoreDatabase(score_db_path)

@@ -15,6 +15,7 @@ from pyMemoryGame.picture_viewer import PictureViewer, PictureBrowser
 
 from kivy.uix.screenmanager import ScreenManager
 from kivy.clock import Clock
+from kivy.resources import resource_add_path
 from pyMemoryGame.utils import *
 
 
@@ -33,6 +34,7 @@ class SchoolApp(App):
     watchdog_timeout_sec = 10*60
 
     def build(self):
+        resource_add_path(os.path.dirname(__file__))
 
         self.screenManager = sm = ScreenManager()
         self.watchdog_event = Clock.schedule_interval(self.watchdog_tick, self.watchdog_tick_period_sec)
@@ -68,5 +70,9 @@ class SchoolApp(App):
             self.screenManager.current = 'PictureViewer'
 
 
-if __name__ == '__main__':
+def run():
     SchoolApp().run()
+
+
+if __name__ == '__main__':
+    run()

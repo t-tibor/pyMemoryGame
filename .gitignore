@@ -1,0 +1,6 @@
+.idea/
+__pycache__/
+build/
+dist/
+pyMemoryGame_t_tibor.egg-info/
+pypi_token.txt
